@@ -1,16 +1,17 @@
 # Required
-region = "us-west-2"
+region = "us-east-2"
 username = "ec2-user"
-vpc_security_group_ids = ["sg-12345"]
+vpc_security_group_ids = ["sg-19915770"]
 
-rama_source_path    = "/absolute/path/to/rama.zip"
-zookeeper_url   = "https://dlcdn.apache.org/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz"
+rama_source_path    = "~/rama.zip"
+# zookeeper_url   = "https://dlcdn.apache.org/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz"
+zookeeper_url   = "https://www.apache.org/dyn/closer.lua/zookeeper/zookeeper-3.9.3/apache-zookeeper-3.9.3-bin.tar.gz"
 
-ami_id              = "ami-56789"    # ARM64 AMI (e.g., Amazon Linux 2)
+# ami_id              = "ami-56789"    # ARM64 AMI (e.g., Amazon Linux 2)
 instance_type       = "t4g.2xlarge" # 32 GB RAM
 
 # Optional
 license_source_path = "/absolute/path/to/license.edn"
 volume_size_gb      = 50            # at least OS requirements + 20 GB
 use_private_ip      = false
-private_ssh_key     = "/path/to/ssh/key"
+private_ssh_key     = "~/rama.key"
