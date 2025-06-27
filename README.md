@@ -1,3 +1,6 @@
+# rama-aws-deploy
+
+This repository provides Terraform configurations and helper scripts to deploy a Rama cluster (single-node for testing or multi-node for production) on AWS. You can run these scripts from your local workstation or an AWS Cloud9 environment as a bastion host.
 - [Prerequisites](#prerequisites)
 - [Deploying](#deploying)
   - [Deploying a Rama Cluster and Modules](#deploying-a-rama-cluster-and-modules)
@@ -41,7 +44,34 @@ key_name = <name of the key you have configured as a key pair for EC2>
 
 For AWS authentication, we recommend setting up [aws-vault](https://github.com/99designs/aws-vault).
 
+### AWS Cloud9 (optional)
+
+You can use an AWS Cloud9 environment as a bastion host to run Terraform and helper scripts without configuring your local machine. For example:
+
+```bash
+aws cloud9 create-environment-ec2 \
+  --name rama-setup \
+  --description "Bastion for Rama AWS Deploy" \
+  --instance-type t3.small \
+  --automatic-stop-time-minutes 60 \
+  --region us-west-2
+```
+
+In the AWS Console, open the new Cloud9 environment, assign an IAM role with permissions to manage EC2, S3, and other required services, then clone this repository and follow the remaining steps below.
+
 You can download a Rama release [from our website](https://redplanetlabs.com/download).
+
+## Infrastructure Setup (optional)
+
+This repository includes Terraform to set up auxiliary AWS infrastructure (IAM roles, S3 bucket for artifacts):
+
+```bash
+# Deploy IAM resources (admin)
+bin/rama-infra.sh admin
+
+# Deploy S3 bucket for artifacts (user)
+bin/rama-infra.sh user
+```
 
 ## Deploying
 
@@ -59,6 +89,8 @@ You can download a Rama release [from our website](https://redplanetlabs.com/dow
 ### Deploying a single-node Rama cluster
 
 This option deploys Zookeeper, Conductor, and one supervisor onto the same node.
+
+We recommend using a Graviton2 instance for testing (e.g., `t4g.2xlarge` with 32 GB RAM) and setting `volume_size_gb` at least 20 GB larger than the OS requirements (e.g., 50 GB total).
 
 1. Make sure you have your zip file of Rama and license downloaded.
 2. Create `rama.tfvars` at the root of your project to set Terraform variables.  See `rama.tfvars.single.example`. There are several variables that are required to set.

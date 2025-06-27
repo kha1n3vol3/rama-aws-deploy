@@ -11,7 +11,7 @@ usage () {
 
 APPLY_ROLE=$1
 ROOT_DIR=$(pwd)
-TF_DIR="${ROOT_DIR}"/aws-deploy/rama-infra/"${APPLY_ROLE}"
+TF_DIR="${ROOT_DIR}"/rama-infra/"${APPLY_ROLE}"
 
 pushd "${TF_DIR}" || usage
 
