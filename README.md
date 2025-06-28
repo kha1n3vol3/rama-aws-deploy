@@ -34,13 +34,15 @@ If you haven't already, create a new EC2 key pair in your AWS Console.
 It should automatically download a new `.pem` file. Add the downloaded `.pem`
 file to your your private key identities with `ssh-add path/to/file.pem`.
 
-Create a file `~/.rama/auth.tfvars` with the following content:
+Create a file `~/.rama/auth.tfvars` containing your EC2 keypair name:
 
-```
-key_name = <name of the key you have configured as a key pair for EC2>
+```hcl
+key_name = "<name of your EC2 key pair>"
 ```
 
-`~/.rama` must be added to your PATH.
+> **Note:** Only `key_name` belongs in your `auth.tfvars`. If you need to supply a private SSH key for node access, set the `private_ssh_key` variable in your **rama.tfvars**, not in `auth.tfvars`.
+
+Make sure your `~/.rama` directory is in your `PATH`, so that cluster helper commands (e.g., `rama-<cluster-name>`) are available.
 
 For AWS authentication, we recommend setting up [aws-vault](https://github.com/99designs/aws-vault).
 
@@ -80,7 +82,12 @@ bin/rama-infra.sh user
 ### Deploying a multi-node Rama cluster
 
 1. Make sure you have your zip file of Rama and license downloaded.
-2. Create `rama.tfvars` at the root of your project to set Terraform variables. These govern e.g. the number of supervisors to deploy. See `rama.tfvars.multi.example`. There are several variables that are required to set.
+2. Copy the example tfvars and edit it:
+
+   ```bash
+   cp rama.tfvars.multi.example rama.tfvars
+   ```
+   Then open `rama.tfvars` and update the required variables (region, username, vpc_security_group_ids, etc).
 3. Run `bin/rama-cluster.sh deploy <cluster-name> [opt-args]`.
    `opt-args` are passed to `terraform apply`.
    For example, if you wanted to just deploy zookeeper servers, you would run
@@ -93,7 +100,12 @@ This option deploys Zookeeper, Conductor, and one supervisor onto the same node.
 We recommend using a Graviton2 instance for testing (e.g., `t4g.2xlarge` with 32 GB RAM) and setting `volume_size_gb` at least 20 GB larger than the OS requirements (e.g., 50 GB total).
 
 1. Make sure you have your zip file of Rama and license downloaded.
-2. Create `rama.tfvars` at the root of your project to set Terraform variables.  See `rama.tfvars.single.example`. There are several variables that are required to set.
+2. Copy the example tfvars and edit it:
+
+   ```bash
+   cp rama.tfvars.single.example rama.tfvars
+   ```
+   Then open `rama.tfvars` and update the required variables (region, username, vpc_security_group_ids, etc).
 3. Run `bin/rama-cluster.sh deploy --singleNode <cluster-name>`.
 
 

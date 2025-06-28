@@ -27,6 +27,7 @@ fi
 CLUSTER_NAME=$1
 shift
 
+
 WORKSPACE_NAME=${CLUSTER_NAME}
 
 ROOT_DIR="$(realpath "${DIR}/..")"
@@ -45,51 +46,48 @@ fi
 
 echo "Performing ${OP_NAME} ${CLUSTER_NAME}"
 
-find_rama_tfvars_rec () {
-  if test -f "./rama.tfvars"; then
-    realpath "./rama.tfvars"
-  else
-    if [ "$(pwd)" = "/" ]; then
-      echo "[ERROR] Could not find rama.tfvars file" >&2
-      exit 1
-    else
-      pushd ..
-      find_rama_tfvars_rec
-      popd
+find_rama_tfvars() {
+  local dir="$CWD"
+  while [ "$dir" != "/" ]; do
+    if [ -f "$dir/rama.tfvars" ]; then
+      realpath "$dir/rama.tfvars"
+      return
     fi
-  fi
+    dir=$(dirname "$dir")
+  done
+  echo "[ERROR] Could not find rama.tfvars file" >&2
+  exit 1
 }
 
-find_rama_tfvars () {
-  (
-    cd "$CWD"
-    find_rama_tfvars_rec
-  )
-}
-
-get_tfvars_value () {
-  # get line
-  line=$(grep $2 $1)
-  # get the value, then trim leading/trailing whitespace
+get_tfvars_value() {
+  local file="$1"
+  local var="$2"
+  local line
+  line=$(grep -E "^[[:space:]]*${var}[[:space:]]*=" "$file" || true)
   echo "${line#*=}" | xargs
 }
 
-run_destroy () {
-  tfvars="$(find_rama_tfvars)"
-  cd ${TF_ROOT_DIR}
-  terraform workspace select "${WORKSPACE_NAME}"
+prepare_workspace() {
+  terraform init
+  terraform workspace select "$WORKSPACE_NAME" &>/dev/null || terraform workspace new "$WORKSPACE_NAME"
+}
+
+run_destroy() {
+  local tfvars
+  tfvars=$(find_rama_tfvars)
+  cd "$TF_ROOT_DIR"
+  terraform workspace select "$WORKSPACE_NAME"
   terraform destroy -auto-approve \
     -parallelism=50 \
     -var-file "$tfvars" \
-    -var-file ~/.rama/auth.tfvars \
+    -var-file "$HOME/.rama/auth.tfvars" \
     -var="cluster_name=$CLUSTER_NAME"
   terraform workspace select default
-  terraform workspace delete "${WORKSPACE_NAME}"
+  terraform workspace delete "$WORKSPACE_NAME"
 
-  rm -f ~/.rama/rama-"${CLUSTER_NAME}"
-  rm -rf ~/.rama/"${CLUSTER_NAME}"
+  rm -f "$HOME/.rama/rama-$CLUSTER_NAME"
+  rm -rf "$HOME/.rama/$CLUSTER_NAME"
   echo "Rama cluster destroyed."
-  # ensure zero exit code
   return 0
 }
 
@@ -104,67 +102,61 @@ confirm_destroy () {
   fi
 }
 
-# allow passing in of extra args to `terraform apply`
-all_args="$@"
-rest_args=("${all_args}")
-rest_args_set=${rest_args:-}
-if [ ! -z ${rest_args_set} ]; then
-  tf_apply_args="${rest_args[@]}"
-else
-  tf_apply_args=""
+
+# extra args to pass through to `terraform apply`
+tf_apply_args=("$@")
+
+# ensure we have AWS EC2 keypair info
+if [ ! -f "$HOME/.rama/auth.tfvars" ]; then
+  echo "[ERROR] Missing ~/.rama/auth.tfvars; please create it with 'key_name = \"<EC2 keypair name>\"'" >&2
+  exit 1
 fi
 
-run_deploy () {
-  tfvars="$(find_rama_tfvars)"
-  cd ${TF_ROOT_DIR}
-  terraform init
-  terraform workspace select "${WORKSPACE_NAME}" &> /dev/null || terraform workspace new "${WORKSPACE_NAME}"
+run_deploy() {
+  local tfvars rama_source_path
+  tfvars=$(find_rama_tfvars)
+  cd "$TF_ROOT_DIR"
+  prepare_workspace
   terraform apply \
     -auto-approve \
     -parallelism=30 \
     -var-file "$tfvars" \
-    -var-file ~/.rama/auth.tfvars \
-    -var="cluster_name=${CLUSTER_NAME}" \
-    $tf_apply_args
+    -var-file "$HOME/.rama/auth.tfvars" \
+    -var="cluster_name=$CLUSTER_NAME" \
+    "${tf_apply_args[@]}"
 
-  # "Install" rama and your cluster config in your home directory so that you
-  # can deploy modules with `rama-$CLUSTER_NAME deploy $MODULE_NAME`
-  rm -rf ${HOME_CLUSTER_DIR}
-  mkdir -p ${HOME_CLUSTER_DIR}
+  rm -rf "$HOME_CLUSTER_DIR"
+  mkdir -p "$HOME_CLUSTER_DIR"
 
-  # Save the outputs to the cluster directory
-  terraform output -json > ${HOME_CLUSTER_DIR}/outputs.json
+  terraform output -json > "$HOME_CLUSTER_DIR/outputs.json"
 
-  rama_source_path="$(get_tfvars_value $tfvars rama_source_path)"
+  rama_source_path=$(get_tfvars_value "$tfvars" rama_source_path)
+  cp "$rama_source_path" "$HOME_CLUSTER_DIR/rama.zip"
+  cp "$tfvars" "$HOME_CLUSTER_DIR"
+
   (
-      cp ${rama_source_path} ${HOME_CLUSTER_DIR}/rama.zip
-      cp ${tfvars} ${HOME_CLUSTER_DIR}
-  )
-  (
-      cd ${HOME_CLUSTER_DIR}
-      unzip rama.zip &> /dev/null
-      rm rama.yaml
-      rm rama.zip
+    cd "$HOME_CLUSTER_DIR"
+    unzip rama.zip &>/dev/null
+    rm rama.yaml
+    rm rama.zip
   )
 
-  ## Copy the deployment's rama.yaml because it has entries for the conductor
-  cp /tmp/deployment.yaml ~/.rama/${CLUSTER_NAME}/rama.yaml
-  ln -fs ~/.rama/${CLUSTER_NAME}/rama ~/.rama/rama-${CLUSTER_NAME}
+  cp "/tmp/deployment.yaml" "$HOME/.rama/$CLUSTER_NAME/rama.yaml"
+  ln -fs "$HOME/.rama/$CLUSTER_NAME/rama" "$HOME/.rama/rama-$CLUSTER_NAME"
   echo "Rama cluster deployed, have fun."
-  # ensure zero exit code
   return 0
 }
 
-run_plan () {
-  tfvars="$(find_rama_tfvars)"
-  cd ${TF_ROOT_DIR}
-  terraform workspace select "${WORKSPACE_NAME}" &> /dev/null || terraform workspace new "${WORKSPACE_NAME}"
-  terraform init
+run_plan() {
+  local tfvars
+  tfvars=$(find_rama_tfvars)
+  cd "$TF_ROOT_DIR"
+  prepare_workspace
   terraform plan \
     -var-file "$tfvars" \
-    -var-file ~/.rama/auth.tfvars \
-    -var="cluster_name=${CLUSTER_NAME}" \
-    $tf_apply_args
+    -var-file "$HOME/.rama/auth.tfvars" \
+    -var="cluster_name=$CLUSTER_NAME" \
+    "${tf_apply_args[@]}"
 }
 
 case "${OP_NAME}" in
