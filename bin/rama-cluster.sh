@@ -61,9 +61,10 @@ find_rama_tfvars_rec () {
 }
 
 find_rama_tfvars () {
-  cd "$CWD"
-  tfvars="$(find_rama_tfvars_rec)"
-  echo "$tfvars"
+  (
+    cd "$CWD"
+    find_rama_tfvars_rec
+  )
 }
 
 get_tfvars_value () {
