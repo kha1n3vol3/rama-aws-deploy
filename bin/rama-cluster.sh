@@ -123,7 +123,7 @@ run_deploy() {
     -var-file "$tfvars" \
     -var-file "$HOME/.rama/auth.tfvars" \
     -var="cluster_name=$CLUSTER_NAME" \
-    "${tf_apply_args[@]}"
+    "${tf_apply_args[@]:-}"
 
   rm -rf "$HOME_CLUSTER_DIR"
   mkdir -p "$HOME_CLUSTER_DIR"
@@ -156,7 +156,7 @@ run_plan() {
     -var-file "$tfvars" \
     -var-file "$HOME/.rama/auth.tfvars" \
     -var="cluster_name=$CLUSTER_NAME" \
-    "${tf_apply_args[@]}"
+    "${tf_apply_args[@]:-}"
 }
 
 case "${OP_NAME}" in
