@@ -75,8 +75,8 @@ get_tfvars_value () {
 }
 
 run_destroy () {
-  cd ${TF_ROOT_DIR}
   tfvars="$(find_rama_tfvars)"
+  cd ${TF_ROOT_DIR}
   terraform workspace select "${WORKSPACE_NAME}"
   terraform destroy -auto-approve \
     -parallelism=50 \
@@ -115,8 +115,8 @@ else
 fi
 
 run_deploy () {
-  cd ${TF_ROOT_DIR}
   tfvars="$(find_rama_tfvars)"
+  cd ${TF_ROOT_DIR}
   terraform init
   terraform workspace select "${WORKSPACE_NAME}" &> /dev/null || terraform workspace new "${WORKSPACE_NAME}"
   terraform apply \
@@ -156,8 +156,8 @@ run_deploy () {
 }
 
 run_plan () {
-  cd ${TF_ROOT_DIR}
   tfvars="$(find_rama_tfvars)"
+  cd ${TF_ROOT_DIR}
   terraform workspace select "${WORKSPACE_NAME}" &> /dev/null || terraform workspace new "${WORKSPACE_NAME}"
   terraform init
   terraform plan \
