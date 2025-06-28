@@ -43,11 +43,9 @@ variable "private_ssh_key" {
 provider "aws" {
   region      = var.region
   max_retries = 25
-  version     = "~> 4.1.0"
 }
 
 provider "cloudinit" {
-  version = "~> 2.2.0"
 }
 
 locals {
@@ -245,5 +243,5 @@ output "conductor_ui" {
 }
 
 output "ec2_console" {
-  value = "https://us-west-2.console.aws.amazon.com/ec2/v2/home?region=us-west-2#Instances:tag:Name=${var.cluster_name}-cluster-supervisor,${var.cluster_name}-cluster-conductor,${var.cluster_name}-cluster-zookeeper;instanceState=running;sort=desc:tag:Name"
+  value = "https://console.aws.amazon.com/ec2/v2/home?region=${var.region}#Instances:tag:Name=${var.cluster_name}-cluster-supervisor,${var.cluster_name}-cluster-conductor,${var.cluster_name}-cluster-zookeeper;instanceState=running;sort=desc:tag:Name"
 }
