@@ -205,7 +205,8 @@ An absolute path pointing to the location on the local disk of your `rama.zip`.
 - type: `string`
 - required: `false`
 
-An absolute path pointing to the location on the local disk of your Rama license file.
+An absolute path pointing to the location on the local disk of your Rama license file. If this is empty or the file does not exist,
+no license will be injected and the cluster will still deploy (single-node and up to two supervisors work without a license).
 
 ### zookeeper_url
 - type: `string`

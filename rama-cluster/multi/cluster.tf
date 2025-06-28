@@ -148,7 +148,7 @@ data "cloudinit_config" "conductor_config" {
         command     = "conductor"
       }),
       # rama.license
-      license_file_contents = var.license_source_path != "" ? file(var.license_source_path) : "",
+      license_file_contents = (var.license_source_path != "" && fileexists(var.license_source_path)) ? file(var.license_source_path) : "",
       # Manage rama.zip script
       unpack_rama_contents = templatefile("../common/conductor/unpack-rama.sh", {
         username = var.username
