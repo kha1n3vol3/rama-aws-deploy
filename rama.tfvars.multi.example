@@ -18,7 +18,7 @@ zookeeper_instance_type  = "m6g.medium" # https://instances.vantage.sh/aws/ec2/m
 supervisor_num_nodes = 1 # default 2
 
 # Optional
-license_source_path = "/absolute/path/to/license.edn"
+license_source_path = ""
 zookeeper_num_nodes  = 1
 supervisor_volume_size_gb = 100
 use_private_ip = false

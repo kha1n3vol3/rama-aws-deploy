@@ -11,7 +11,7 @@ ami_id              = "ami-07d9881e6986c46f8"    # ARM64 AMI ubuntu 24.10
 instance_type       = "m6g.large" # The m6g.xlarge instance is in the General purpose family with 4 vCPUs, 16 GiB of memory and up to 10 Gibps of bandwidth starting at $0.154 per hour.
 
 # Optional
-license_source_path = "/absolute/path/to/license.edn"
+license_source_path = ""
 volume_size_gb      = 50            # at least OS requirements + 20 GB
 use_private_ip      = false
 private_ssh_key     = "~/rama.key"
