@@ -45,8 +45,6 @@ provider "aws" {
   max_retries = 25
 }
 
-provider "cloudinit" {
-}
 
 locals {
   home_dir = "/home/${var.username}"

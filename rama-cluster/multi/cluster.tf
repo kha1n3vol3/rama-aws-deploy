@@ -57,8 +57,6 @@ provider "aws" {
   max_retries = 25
 }
 
-provider "cloudinit" {
-}
 
 locals {
   zk_public_ips  = aws_instance.zookeeper[*].public_ip
