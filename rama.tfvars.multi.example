@@ -1,24 +1,25 @@
 # Required
-region = "us-west-2"
+region = "us-east-2"
 username = "ec2-user"
-vpc_security_group_ids = ["sg-12345"]
+vpc_security_group_ids = ["sg-19915770"]
 
-rama_source_path    = "/absolute/path/to/rama.zip"
-zookeeper_url   = "https://dlcdn.apache.org/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz"
+rama_source_path    = "~/rama.zip"
+# zookeeper_url   = "https://dlcdn.apache.org/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz"
+zookeeper_url   = "https://www.apache.org/dyn/closer.lua/zookeeper/zookeeper-3.9.3/apache-zookeeper-3.9.3-bin.tar.gz"
 
-zookeeper_ami_id  = "ami-56789"
-conductor_ami_id  = "ami-12345"
-supervisor_ami_id = "ami-12345"
+zookeeper_ami_id  = "ami-07d9881e6986c46f8"
+conductor_ami_id  = "ami-07d9881e6986c46f8"
+supervisor_ami_id = "ami-07d9881e6986c46f8"
 
-conductor_instance_type  = "m6g.medium"
-supervisor_instance_type = "m6g.large"
-zookeeper_instance_type  = "m6g.medium"
+conductor_instance_type  = "m6g.medium" # https://instances.vantage.sh/aws/ec2/m6g.medium $0.924 per day
+supervisor_instance_type = "m6g.large"  # https://instances.vantage.sh/aws/ec2/m6g.large  $1.848 per day
+zookeeper_instance_type  = "m6g.medium" # https://instances.vantage.sh/aws/ec2/m6g.medium $0.924 per day
 
-supervisor_num_nodes = 2
+supervisor_num_nodes = 1 # default 2
 
 # Optional
 license_source_path = "/absolute/path/to/license.edn"
 zookeeper_num_nodes  = 1
 supervisor_volume_size_gb = 100
 use_private_ip = false
-private_ssh_key = "/path/to/ssh/key"
+private_ssh_key = "~/rama.key"
