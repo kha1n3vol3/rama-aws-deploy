@@ -1,6 +1,6 @@
 # Required variables for single-node Rama cluster (testing)
 region = "us-east-2"
-username = "ec2-user"
+username = "ubuntu"
 vpc_security_group_ids = ["sg-19915770"]
 
 # Paths and URLs
