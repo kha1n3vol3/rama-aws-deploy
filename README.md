@@ -87,6 +87,7 @@ bin/rama-infra.sh user
    ```bash
    cp rama.tfvars.multi.example rama.tfvars
    ```
+   **Tip:** If running Terraform within the same VPC (e.g., AWS Cloud9), set `use_private_ip = true` so provisioning uses the private IP.
    Then open `rama.tfvars` and update the required variables (region, username, vpc_security_group_ids, etc).
 3. Run `bin/rama-cluster.sh deploy <cluster-name> [opt-args]`.
    `opt-args` are passed to `terraform apply`.
@@ -105,6 +106,7 @@ We recommend using a Graviton2 instance for testing (e.g., `t4g.2xlarge` with 32
    ```bash
    cp rama.tfvars.single.example rama.tfvars
    ```
+   **Tip:** If running Terraform within the same VPC (e.g., AWS Cloud9), set `use_private_ip = true` so provisioning uses the private IP.
    Then open `rama.tfvars` and update the required variables (region, username, vpc_security_group_ids, etc).
 3. Run `bin/rama-cluster.sh deploy --singleNode <cluster-name>`.
 
@@ -279,10 +281,10 @@ The size of the supervisors' disks on the nodes.
 - required: `false`
 - default: `false`
 
-Whether to use the global public IDs, or private internal IPs.
+Whether to use the instance's public IP (false) or private IP (true) for provisioning.
 
-Ex. if your security group is configured to only allow connection through a VPN, you should set
-this to true so that you're not coming from outside the network.
+If you are running Terraform within the same VPC (e.g., an AWS Cloud9 bastion), set this to `true`
+so that SSH/provisioners use the node's private IP address.
 
 ### private_ssh_key
 - type: `string`
