@@ -106,6 +106,11 @@ resource "aws_instance" "zookeeper" {
     volume_size = 100
   }
 
+  # Wait for SSH availability before copying files
+  provisioner "remote-exec" {
+    inline = ["echo Waiting for SSH to become available"]
+  }
+
   provisioner "file" {
     destination = "${local.home_dir}/zookeeper.service"
     content = templatefile("../common/zookeeper/zookeeper.service", {
@@ -301,6 +306,16 @@ resource "null_resource" "zookeeper" {
 
   triggers = {
     zookeeper_ids = "${join(",", aws_instance.zookeeper.*.id)}"
+  }
+
+  # Ensure SSH is ready before provisioning conductor
+  provisioner "remote-exec" {
+    inline = ["echo Waiting for SSH to become available"]
+  }
+
+  # Ensure SSH is ready before provisioning supervisor
+  provisioner "remote-exec" {
+    inline = ["echo Waiting for SSH to become available"]
   }
 
   provisioner "file" {
