@@ -52,6 +52,12 @@ variable "private_ssh_key" {
   default = null
 }
 
+variable "private_key_file" {
+  type        = string
+  default     = ""
+  description = "(legacy) alias for private_ssh_key; set private_ssh_key instead"
+}
+
 provider "aws" {
   region      = var.region
   max_retries = 25
@@ -70,6 +76,9 @@ locals {
 
   # networking
   vpc_security_group_ids = var.vpc_security_group_ids
+
+  # merge legacy private_key_file into private_ssh_key
+  private_ssh_key_final = var.private_ssh_key != null ? var.private_ssh_key : (var.private_key_file != "" ? var.private_key_file : null)
   #vpc_security_group_ids = [module.vpc.default_security_group_id]
   #vpc_id                 = module.vpc.vpc_id
   #subnet_id              = module.vpc.public_subnets[0]
@@ -122,7 +131,7 @@ resource "aws_instance" "zookeeper" {
     type        = "ssh"
     user        = var.username
     host        = var.use_private_ip ? self.private_ip : self.public_ip
-    private_key = var.private_ssh_key != null ? file(var.private_ssh_key) : null
+    private_key = local.private_ssh_key_final != null ? file(local.private_ssh_key_final) : null
   }
 }
 
@@ -192,13 +201,13 @@ resource "aws_instance" "conductor" {
   }
 
   provisioner "remote-exec" {
-    # Make sure SSH is up and available on the server before trying to upload rama.zip
-    inline = ["ls"]
+    # ensure SSH is up before uploading rama.zip
+    inline = ["echo Waiting for SSH to become available"]
   }
 
   provisioner "local-exec" {
     when    = create
-    command = "../common/upload_rama.sh ${var.rama_source_path} ${var.username} ${var.use_private_ip ? self.private_ip : self.public_ip}"
+    command = "../common/upload_rama.sh ${var.rama_source_path} ${var.username} ${var.use_private_ip ? self.private_ip : self.public_ip} ${local.private_ssh_key_final != null ? local.private_ssh_key_final : ""}"
   }
 
   provisioner "remote-exec" {
@@ -213,7 +222,7 @@ resource "aws_instance" "conductor" {
     type        = "ssh"
     user        = var.username
     host        = var.use_private_ip ? self.private_ip : self.public_ip
-    private_key = var.private_ssh_key != null ? file(var.private_ssh_key) : null
+    private_key = local.private_ssh_key_final != null ? file(local.private_ssh_key_final) : null
   }
 }
 
@@ -286,7 +295,7 @@ resource "aws_instance" "supervisor" {
     type        = "ssh"
     user        = var.username
     host        = var.use_private_ip ? self.private_ip : self.public_ip
-    private_key = var.private_ssh_key != null ? file(var.private_ssh_key) : null
+    private_key = local.private_ssh_key_final != null ? file(local.private_ssh_key_final) : null
   }
 }
 
