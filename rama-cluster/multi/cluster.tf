@@ -187,8 +187,8 @@ resource "aws_instance" "conductor" {
   }
 
   provisioner "remote-exec" {
-    # make sure disk provisioning is done
-    script = "wait-for-signal.sh"
+    # ensure disk provisioning has completed (cloud-init)
+    script = "${path.module}/../common/wait-for-signal.sh"
   }
 
   provisioner "remote-exec" {

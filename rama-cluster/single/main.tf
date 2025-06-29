@@ -86,6 +86,11 @@ resource "aws_instance" "rama" {
     inline = ["echo Waiting for SSH to be available"]
   }
 
+  provisioner "remote-exec" {
+    # ensure disk provisioning has completed (cloud-init)
+    script = "${path.module}/../common/wait-for-signal.sh"
+  }
+
   # Zookeeper setup
   provisioner "file" {
     destination = "${local.home_dir}/zookeeper.service"
