@@ -55,7 +55,7 @@ locals {
   home_dir               = "/home/${var.username}"
   systemd_dir            = "/etc/systemd/system"
   vpc_security_group_ids = var.vpc_security_group_ids
-  private_ssh_key_final  = var.private_ssh_key != null ? var.private_ssh_key : (var.private_key_file != "" ? var.private_key_file : null)
+  private_ssh_key_final = var.private_ssh_key != null ? var.private_ssh_key : (var.private_key_file != "" ? var.private_key_file : null)
 }
 
 ###
@@ -169,7 +169,7 @@ resource "null_resource" "rama" {
 	type        = "ssh"
 	user        = var.username
 	host        = var.use_private_ip ? aws_instance.rama.private_ip : aws_instance.rama.public_ip
-	private_key = var.private_ssh_key != null ? file(var.private_ssh_key) : null
+    private_key = local.private_ssh_key_final != null ? file(local.private_ssh_key_final) : null
   }
 
   triggers = {
