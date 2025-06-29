@@ -1,7 +1,7 @@
 # Required variables for single-node Rama cluster (testing)
 region = "us-east-2"
 username = "ubuntu"
-vpc_security_group_ids = ["sg-19915770"]
+vpc_security_group_ids = ["sg-04d868f4c6b93585e"]
 
 # Paths and URLs
 rama_source_path = "~/rama.zip"
