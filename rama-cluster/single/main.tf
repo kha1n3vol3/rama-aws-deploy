@@ -81,6 +81,11 @@ resource "aws_instance" "rama" {
     volume_size = var.volume_size_gb
   }
 
+  # Ensure SSH is available before doing any file transfers
+  provisioner "remote-exec" {
+    inline = ["echo Waiting for SSH to be available"]
+  }
+
   # Zookeeper setup
   provisioner "file" {
     destination = "${local.home_dir}/zookeeper.service"
@@ -89,23 +94,17 @@ resource "aws_instance" "rama" {
     })
   }
 
-  # Conductor setup
-  provisioner "remote-exec" {
-	# Make sure SSH si set up and available on the server before trying to upload rama.zip
-	inline = ["ls"]
-  }
-
   provisioner "local-exec" {
-	when = create
-	command = "../common/upload_rama.sh ${var.rama_source_path} ${var.username} ${var.use_private_ip ? self.private_ip : self.public_ip}"
+    when    = create
+    command = "../common/upload_rama.sh ${var.rama_source_path} ${var.username} ${var.use_private_ip ? self.private_ip : self.public_ip}"
   }
 
   provisioner "remote-exec" {
-	inline = [
-	  "cd /data/rama",
-	  "chmod +x unpack-rama.sh",
-	  "./unpack-rama.sh"
-	]
+    inline = [
+      "cd /data/rama",
+      "chmod +x unpack-rama.sh",
+      "./unpack-rama.sh"
+    ]
   }
 
   connection {
