@@ -105,9 +105,11 @@ resource "aws_instance" "rama" {
     })
   }
 
-  provisioner "local-exec" {
-    when    = create
-    command = "../common/upload_rama.sh ${var.rama_source_path} ${var.username} ${var.use_private_ip ? self.private_ip : self.public_ip} ${local.private_ssh_key_final != null ? local.private_ssh_key_final : ""}"
+  # Download Rama server zip directly from configured URL
+  provisioner "remote-exec" {
+    inline = [
+      "curl -sSL ${var.rama_source_path} -o /home/${var.username}/rama.zip"
+    ]
   }
 
   provisioner "remote-exec" {

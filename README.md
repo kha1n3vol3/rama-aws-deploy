@@ -201,7 +201,7 @@ The security groups that the nodes are members of.
 - type: `string`
 - required: `true`
 
-An absolute path pointing to the location on the local disk of your `rama.zip`.
+An absolute path or URL pointing to the location of your `rama.zip`. If this is a URL (e.g. S3), the node will download it via curl.
 
 ### license_source_path
 - type: `string`
