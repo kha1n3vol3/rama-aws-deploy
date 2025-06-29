@@ -39,6 +39,11 @@ variable "private_ssh_key" {
   type    = string
   default = null
 }
+variable "private_key_file" {
+  type        = string
+  default     = ""
+  description = "(legacy) alias for private_ssh_key; set private_ssh_key instead"
+}
 
 provider "aws" {
   region      = var.region
@@ -47,9 +52,10 @@ provider "aws" {
 
 
 locals {
-  home_dir = "/home/${var.username}"
-  systemd_dir = "/etc/systemd/system"
+  home_dir               = "/home/${var.username}"
+  systemd_dir            = "/etc/systemd/system"
   vpc_security_group_ids = var.vpc_security_group_ids
+  private_ssh_key_final  = var.private_ssh_key != null ? var.private_ssh_key : (var.private_key_file != "" ? var.private_key_file : null)
 }
 
 ###
@@ -101,7 +107,7 @@ resource "aws_instance" "rama" {
 
   provisioner "local-exec" {
     when    = create
-    command = "../common/upload_rama.sh ${var.rama_source_path} ${var.username} ${var.use_private_ip ? self.private_ip : self.public_ip} ${var.private_ssh_key != null ? var.private_ssh_key : ""}"
+    command = "../common/upload_rama.sh ${var.rama_source_path} ${var.username} ${var.use_private_ip ? self.private_ip : self.public_ip} ${local.private_ssh_key_final != null ? local.private_ssh_key_final : ""}"
   }
 
   provisioner "remote-exec" {
@@ -116,7 +122,7 @@ resource "aws_instance" "rama" {
     type        = "ssh"
     user        = var.username
     host        = var.use_private_ip ? self.private_ip : self.public_ip
-    private_key = var.private_ssh_key != null ? file(var.private_ssh_key) : null
+    private_key = local.private_ssh_key_final != null ? file(local.private_ssh_key_final) : null
   }
 }
 
