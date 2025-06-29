@@ -6,5 +6,4 @@ rama-cluster/multi/.terraform.lock.hcl
 rama-cluster/multi/terraform.tfstate.d
 *zip
 license.edn
-rama.tfvars
 .idea
