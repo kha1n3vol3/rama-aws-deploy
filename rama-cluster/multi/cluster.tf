@@ -208,15 +208,20 @@ resource "aws_instance" "conductor" {
   # Download Rama server zip directly from configured URL
   provisioner "remote-exec" {
     inline = [
-      "curl -sSL ${var.rama_source_path} -o /home/${var.username}/rama.zip"
+      "bash -euxo pipefail -c 'curl -sSLf ${var.rama_source_path} -o /home/${var.username}/rama.zip'"
     ]
   }
 
   provisioner "remote-exec" {
     inline = [
-      "cd /data/rama",
-      "chmod +x unpack-rama.sh",
-      "./unpack-rama.sh"
+      "bash -euxo pipefail -c 'cd /data/rama && chmod +x unpack-rama.sh && ./unpack-rama.sh'"
+    ]
+  }
+
+  # Verify conductor service is running
+  provisioner "remote-exec" {
+    inline = [
+      "bash -euxo pipefail -c 'systemctl is-active --quiet conductor.service || (echo \"Conductor service failed to start\"; journalctl -u conductor.service --no-pager; exit 1)'"
     ]
   }
 
@@ -238,12 +243,6 @@ data "cloudinit_config" "supervisor_config" {
     })
   }
 
-  part {
-    content_type = "text/x-shellscript"
-    content = templatefile("download_rama.sh", {
-      conductor_ip = local.conductor_private_ip
-    })
-  }
 
   part {
     content_type = "text/cloud-config"
@@ -298,6 +297,30 @@ resource "aws_instance" "supervisor" {
     user        = var.username
     host        = var.use_private_ip ? self.private_ip : self.public_ip
     private_key = local.private_ssh_key_final != null ? file(local.private_ssh_key_final) : null
+  }
+
+  # Wait for cloud-init to complete before downloading Rama
+  provisioner "remote-exec" {
+    script = "${path.module}/../common/wait-for-signal.sh"
+  }
+
+  # Download and unpack Rama, fail on error
+  provisioner "remote-exec" {
+    inline = [
+      "bash -euxo pipefail -c 'curl -sSLf ${var.rama_source_path} -o /home/${var.username}/rama.zip'"
+    ]
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "bash -euxo pipefail -c 'cd /data/rama && chmod +x unpack-rama.sh && ./unpack-rama.sh'"
+    ]
+  }
+
+  # Verify supervisor service is running
+  provisioner "remote-exec" {
+    inline = [
+      "bash -euxo pipefail -c 'systemctl is-active --quiet supervisor.service || (echo \"Supervisor service failed to start\"; journalctl -u supervisor.service --no-pager; exit 1)'"
+    ]
   }
 }
 

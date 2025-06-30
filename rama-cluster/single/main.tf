@@ -105,18 +105,27 @@ resource "aws_instance" "rama" {
     })
   }
 
-  # Download Rama server zip directly from configured URL
+  # Download and unpack Rama, fail on error
   provisioner "remote-exec" {
     inline = [
-      "curl -sSL ${var.rama_source_path} -o /home/${var.username}/rama.zip"
+      "bash -euxo pipefail -c 'curl -sSLf ${var.rama_source_path} -o /home/${var.username}/rama.zip'"
+    ]
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "bash -euxo pipefail -c 'cd /data/rama && chmod +x unpack-rama.sh && ./unpack-rama.sh'"
     ]
   }
 
+  # Verify conductor and supervisor services are running
   provisioner "remote-exec" {
     inline = [
-      "cd /data/rama",
-      "chmod +x unpack-rama.sh",
-      "./unpack-rama.sh"
+      "bash -euxo pipefail -c 'systemctl is-active --quiet conductor.service || (echo \"Conductor service failed to start\"; journalctl -u conductor.service --no-pager; exit 1)'"
+    ]
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "bash -euxo pipefail -c 'systemctl is-active --quiet supervisor.service || (echo \"Supervisor service failed to start\"; journalctl -u supervisor.service --no-pager; exit 1)'"
     ]
   }
 

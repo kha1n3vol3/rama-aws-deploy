@@ -3,7 +3,7 @@ region = "us-east-2"
 username = "ec2-user"
 vpc_security_group_ids = ["sg-19915770"]
 
-rama_source_path    = "~/rama.zip"
+	rama_source_path    = "https://redplanetlabs.s3.us-west-2.amazonaws.com/rama/rama-1.1.0.zip"
 # zookeeper_url   = "https://dlcdn.apache.org/zookeeper/zookeeper-3.8.4/apache-zookeeper-3.8.4-bin.tar.gz"
 zookeeper_url   = "https://www.apache.org/dyn/closer.lua/zookeeper/zookeeper-3.9.3/apache-zookeeper-3.9.3-bin.tar.gz"
 
