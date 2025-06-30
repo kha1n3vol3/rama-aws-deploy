@@ -14,6 +14,10 @@ variable "username" { type = string }
 variable "vpc_security_group_ids" { type = list(string) }
 
 variable "rama_source_path" { type = string }
+  validation {
+    condition     = can(regex("^https?://", var.rama_source_path))
+    error_message = "rama_source_path must be an absolute URL (e.g. https://...)"
+  }
 variable "license_source_path" {
   type    = string
   default = ""
