@@ -174,7 +174,17 @@ zookeeper, conductor nodes run a rama conductor, supervisor nodes run a rama
 supervisor.
 
 The relevant directories to look at are the `$HOME` directory, as well as
-`/data/rama`.
+`/data/rama`.  In particular, the supervisor download script logs any retry
+failures to `/data/rama/download.log`, and the conductor/unpack steps record
+startup errors in systemd.  You can inspect these via:
+
+```sh
+sudo journalctl -u conductor.service
+sudo journalctl -u supervisor.service
+```
+
+Any health-check failures during Terraform provisioning will also be printed
+directly in the Terraform console output via the inline `journalctl` commands.
 
 ## rama.tfvars variables
 
