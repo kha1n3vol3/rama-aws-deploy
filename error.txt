@@ -1,4 +1,19 @@
-│ Error: Unsupported block type
+$     bin/rama-cluster.sh deploy --singleNode musika
+Performing deploy musika
+Initializing the backend...
+╷
+│ Error: Terraform encountered problems during initialisation, including problems
+│ with the configuration, described below.
 │ 
-│   on main.tf line 18:
-│   18:   validation {
+│ The Terraform configuration must be valid before initialization so that
+│ Terraform can determine which modules and providers need to be installed.
+│ 
+│ 
+╵
+╷
+│ Error: Invalid escape sequence
+│ 
+│   on main.tf line 125, in resource "aws_instance" "rama":
+│  125:       "bash -euxo pipefail -c \"while [ ! -d /data/rama ]; do sleep 2; done; sudo mkdir -p /data/rama; sudo mv -f /home/${var.username}/rama.zip /data/rama/; cd /data/rama; sudo unzip -n rama.zip; local_dir=\$(grep 'local.dir' rama.yaml | cut -d':' -f2 | xargs); if [ -n \"$local_dir\" ]; then sudo mkdir -p \"$local_dir/conductor/jars\"; sudo cp -f rama.zip \"$local_dir/conductor/jars\"; fi\""
+│ 
+│ The symbol "$" is not a valid escape sequence selector.

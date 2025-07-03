@@ -102,3 +102,93 @@ Document that unpacking is handled automatically by Terraform and no longer invo
 ---
 
 Authored by: GitHub Copilot-based remediation bot 2025-07-03
+
+---
+
+# July 2025 follow-up – “Invalid escape sequence” in `single/main.tf`
+
+## Observed error
+
+Running `bin/rama-cluster.sh deploy --singleNode` fails during `terraform init` with:
+
+```
+│ Error: Invalid escape sequence
+│   on main.tf line 125, in resource "aws_instance" "rama":
+│  125: … \$(grep 'local.dir' rama.yaml | cut -d':' -f2 | xargs); if [ -n \"$local_dir\" ]; …
+│ The symbol "$" is not a valid escape sequence selector.
+```
+
+Terraform treats *any* back-slash followed by a non-whitelisted character inside a double-quoted
+string as an **illegal escape sequence**.  In our case we attempted to “escape” the Bash subshell
+`$( … )` with `\$(`.  That is unnecessary (and wrong) in HCL: the only construct we *must* protect
+is the interpolation form `${ … }`.
+
+## Remediation
+
+1. **Stop back-slashing `$`**
+
+   Replace
+
+   ```hcl
+   local_dir=\$(grep 'local.dir' … )
+   ```
+
+   with
+
+   ```hcl
+   local_dir=$$(grep 'local.dir' … )
+   ```
+
+   • `$$` is an idiomatic way to emit a literal `$` inside a Terraform string.
+   • We *keep* the back-slash in front of the **double quotes** (`\"`) because those really need to
+     be escaped inside the outer HCL string.
+
+2. **Prefer a heredoc for long shell one-liners**
+
+   When the command grows past a few tokens, readability quickly degrades and escaping becomes
+   error-prone.  Terraform allows a [*literal heredoc*](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-templates)
+   that disables interpolation by quoting the delimiter – an approach that eliminates 100 % of the
+   back-slash spaghetti:
+
+   ```hcl
+   provisioner "remote-exec" {
+     inline = [ <<-"SCRIPT"
+       bash -euxo pipefail -c '
+       # Wait until the EBS volume is mounted
+       while [ ! -d /data/rama ]; do sleep 2; done
+
+       sudo mv -f /home/${var.username}/rama.zip /data/rama/
+       cd /data/rama
+       sudo unzip -n rama.zip
+
+       local_dir=$(grep "local.dir" rama.yaml | cut -d":" -f2 | xargs)
+       if [ -n "$local_dir" ]; then
+         sudo mkdir -p "$local_dir/conductor/jars"
+         sudo cp -f rama.zip "$local_dir/conductor/jars"
+       fi
+       '
+     SCRIPT
+     ]
+   }
+   ```
+
+   Key points:
+   • The delimiter is quoted (`"SCRIPT"`), which tells Terraform *not* to process `${…}` or `$$` –
+     the block is passed verbatim to the remote shell.
+   • The Bash script is now readable, testable and free from double escaping.
+
+3. **General best-practice checklist for Terraform + shell**
+
+   • Keep complex logic in separate scripts or templates (use `templatefile()`), not inline strings.
+   • Use *literal* heredocs (`<<-"EOF"`) whenever you need verbatim content.
+   • Avoid mixing `cloud-init` and `remote-exec` for the same task; pick one.
+   • Always enable `set -euo pipefail` (or `-euxo pipefail`) in your shell code.
+   • Make every step idempotent so that `terraform apply` remains repeatable.
+
+## Migration steps
+
+1. Replace the offending `inline` entry in `rama-cluster/single/main.tf` with the heredoc form above.
+2. Run `terraform fmt` to re-format the file.
+3. `terraform init` should now succeed; follow with `terraform apply` for a full validation.
+
+---
