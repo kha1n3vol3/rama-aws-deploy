@@ -220,7 +220,7 @@ resource "aws_instance" "conductor" {
 
   provisioner "remote-exec" {
     inline = [
-      "bash -euxo pipefail -c \"while [ ! -d /data/rama ]; do sleep 2; done; sudo mkdir -p /data/rama; sudo mv -f /home/${var.username}/rama.zip /data/rama/; cd /data/rama; sudo unzip -n rama.zip; local_dir=\$(grep 'local.dir' rama.yaml | cut -d':' -f2 | xargs); if [ -n \"$local_dir\" ]; then sudo mkdir -p \"$local_dir/conductor/jars\"; sudo cp -f rama.zip \"$local_dir/conductor/jars\"; fi\""
+      "bash -euxo pipefail -c \"while [ ! -d /data/rama ]; do sleep 2; done; sudo mkdir -p /data/rama; sudo mv -f /home/${var.username}/rama.zip /data/rama/; cd /data/rama; sudo unzip -n rama.zip; local_dir=\$(grep 'local.dir' rama.yaml | cut -d':' -f2 | xargs); if [ -n \"$$local_dir\" ]; then sudo mkdir -p \"$$local_dir/conductor/jars\"; sudo cp -f rama.zip \"$$local_dir/conductor/jars\"; fi\""
     ]
   }
 
@@ -318,7 +318,7 @@ resource "aws_instance" "supervisor" {
   }
   provisioner "remote-exec" {
     inline = [
-      "bash -euxo pipefail -c \"while [ ! -d /data/rama ]; do sleep 2; done; sudo mkdir -p /data/rama; sudo mv -f /home/${var.username}/rama.zip /data/rama/; cd /data/rama; sudo unzip -n rama.zip; local_dir=\$(grep 'local.dir' rama.yaml | cut -d':' -f2 | xargs); if [ -n \"$local_dir\" ]; then sudo mkdir -p \"$local_dir/conductor/jars\"; sudo cp -f rama.zip \"$local_dir/conductor/jars\"; fi\""
+      "bash -euxo pipefail -c \"while [ ! -d /data/rama ]; do sleep 2; done; sudo mkdir -p /data/rama; sudo mv -f /home/${var.username}/rama.zip /data/rama/; cd /data/rama; sudo unzip -n rama.zip; local_dir=\$(grep 'local.dir' rama.yaml | cut -d':' -f2 | xargs); if [ -n \"$$local_dir\" ]; then sudo mkdir -p \"$$local_dir/conductor/jars\"; sudo cp -f rama.zip \"$$local_dir/conductor/jars\"; fi\""
     ]
   }
 
