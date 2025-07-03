@@ -12,3 +12,15 @@ EOF
 
 systemctl enable supervisor.service
 systemctl start supervisor.service
+
+# Verify supervisor becomes active
+for i in {1..15}; do
+  if systemctl is-active --quiet supervisor.service; then
+    echo "Supervisor service is active."
+    exit 0
+  fi
+  sleep 4
+done
+echo "ERROR: Supervisor service failed to start." >&2
+journalctl -u supervisor.service --no-pager
+exit 1

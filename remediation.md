@@ -1,5 +1,50 @@
 # Rama AWS Deploy – Unpack Script Race Condition Remediation
 
+## July 2025 – Conductor service fails to start (systemd race condition)
+
+### Symptoms
+
+Terraform stops in the `remote-exec` phase with:
+
+```
+systemctl is-active --quiet conductor.service
+Conductor service failed to start
+-- No entries --
+```
+
+`journalctl` returns *No entries* which means the unit file was never loaded
+by `systemd` when the health-check ran.
+
+### Root cause
+
+The health-check was executed **before** cloud-init / the `start.sh` helper
+finished creating & enabling the `conductor.service` unit.  In other words we
+were checking too early – a classic provisioning race condition.
+
+### Remediation / best-practice updates
+
+1. **Move service validation to the very end** of the provisioning sequence.  
+   *Removed* the early `remote-exec` check on the `aws_instance` resource and
+   added a new check *after* `start.sh` (or, in the multi-node template, a
+   dedicated `null_resource` that depends_on the instance).
+
+2. **Add blocking loops to `start.sh`.**  Each script now waits up to
+   ~30 seconds for its `systemd` unit to enter the *active* state and prints
+   useful logs if it does not.
+
+3. **Keep the Terraform plan idempotent.**  All loops exit successfully once
+   the service is up, so rerunning `terraform apply` remains a no-op when the
+   cluster is healthy.
+
+4. **General systemd provisioning guidelines**
+   • Always `systemctl enable` *and* `systemctl start` during bootstrap.  
+   • Verify with a bounded retry loop instead of a single `is-active` call.  
+   • Export logs with `journalctl` when a service fails – this greatly speeds
+     up debugging.
+
+These changes are implemented in commit bcbee5d and later.
+
+
 ## Problem statement
 
 `terraform apply` intermittently fails during the *Download and unpack Rama* phase with:

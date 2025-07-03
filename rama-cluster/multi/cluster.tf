@@ -236,18 +236,38 @@ resource "aws_instance" "conductor" {
     ]
   }
 
-  # Verify conductor service is running
-  provisioner "remote-exec" {
-    inline = [
-      "bash -euxo pipefail -c 'systemctl is-active --quiet conductor.service || (echo \"Conductor service failed to start\"; journalctl -u conductor.service --no-pager; exit 1)'"
-    ]
-  }
+  # health check moved to after start.sh execution to avoid race condition.
 
   connection {
     type        = "ssh"
     user        = var.username
     host        = var.use_private_ip ? self.private_ip : self.public_ip
     private_key = local.private_ssh_key_final != null ? file(local.private_ssh_key_final) : null
+  }
+}
+
+# After the instance bootstraps with cloud-init start.sh, verify that the
+# conductor service is active. This check is separated from the instance
+# resource so that it runs after the initial provisioning and avoids race
+# conditions with systemd startup.
+resource "null_resource" "conductor_healthcheck" {
+  depends_on = [aws_instance.conductor]
+
+  triggers = {
+    instance_id = aws_instance.conductor.id
+  }
+
+  connection {
+    type        = "ssh"
+    user        = var.username
+    host        = var.use_private_ip ? aws_instance.conductor.private_ip : aws_instance.conductor.public_ip
+    private_key = local.private_ssh_key_final != null ? file(local.private_ssh_key_final) : null
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "bash -euxo pipefail -c 'for i in {1..15}; do if systemctl is-active --quiet conductor.service; then echo \"conductor is running\"; exit 0; fi; sleep 4; done; echo \"conductor failed to start\"; journalctl -u conductor.service --no-pager; exit 1'"
+    ]
   }
 }
 

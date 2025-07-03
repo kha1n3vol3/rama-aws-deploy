@@ -33,3 +33,22 @@ sudo systemctl start conductor.service
 
 sudo systemctl enable supervisor.service
 sudo systemctl start supervisor.service
+
+# Wait for services to become active to ensure reliability for downstream
+# Terraform provisioners.
+for svc in conductor supervisor; do
+  echo "Waiting for $svc service to become active..."
+  for i in {1..10}; do
+    if systemctl is-active --quiet "${svc}.service"; then
+      echo "$svc service is active."
+      break
+    fi
+    sleep 3
+  done
+  # Fail script (and therefore Terraform) if service failed to start
+  if ! systemctl is-active --quiet "${svc}.service"; then
+    echo "ERROR: $svc service failed to start."
+    journalctl -u "${svc}.service" --no-pager
+    exit 1
+  fi
+done

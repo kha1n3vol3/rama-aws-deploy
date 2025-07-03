@@ -139,17 +139,8 @@ resource "aws_instance" "rama" {
     ]
   }
 
-  # Verify conductor and supervisor services are running
-  provisioner "remote-exec" {
-    inline = [
-      "bash -euxo pipefail -c 'systemctl is-active --quiet conductor.service || (echo \"Conductor service failed to start\"; journalctl -u conductor.service --no-pager; exit 1)'"
-    ]
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "bash -euxo pipefail -c 'systemctl is-active --quiet supervisor.service || (echo \"Supervisor service failed to start\"; journalctl -u supervisor.service --no-pager; exit 1)'"
-    ]
-  }
+  # NOTE: service health checks moved to null_resource after the services
+  # are started by start.sh to avoid race conditions during provisioning.
 
   connection {
     type        = "ssh"
@@ -247,6 +238,14 @@ resource "null_resource" "rama" {
 
   provisioner "remote-exec" {
     script = "./start.sh"
+  }
+
+  # Verify conductor and supervisor services are running now that start.sh
+  # has had a chance to enable and start them.
+  provisioner "remote-exec" {
+    inline = [
+      "bash -euxo pipefail -c 'for svc in conductor supervisor; do for i in {1..10}; do if systemctl is-active --quiet ${svc}.service; then echo \"${svc} is running\"; break; fi; sleep 3; done; systemctl is-active --quiet ${svc}.service || (echo \"${svc} service failed to start\"; journalctl -u ${svc}.service --no-pager; exit 1); done'"
+    ]
   }
 }
 
