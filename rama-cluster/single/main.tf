@@ -119,9 +119,10 @@ resource "aws_instance" "rama" {
       "bash -euxo pipefail -c 'curl -sSLf ${var.rama_source_path} -o /home/${var.username}/rama.zip'"
     ]
   }
+  # Wait until cloud-init places unpack-rama.sh, then unpack Rama
   provisioner "remote-exec" {
     inline = [
-      "bash -euxo pipefail -c 'cd /data/rama && chmod +x unpack-rama.sh && ./unpack-rama.sh'"
+      "bash -euxo pipefail -c 'timeout=180; elapsed=0; while [ ! -f /data/rama/unpack-rama.sh ]; do if [ \"$elapsed\" -ge \"$timeout\" ]; then echo Timed out waiting for /data/rama/unpack-rama.sh from cloud-init >&2; exit 1; fi; sleep 3; elapsed=$((elapsed+3)); done; cd /data/rama; chmod +x unpack-rama.sh; ./unpack-rama.sh'"
     ]
   }
 

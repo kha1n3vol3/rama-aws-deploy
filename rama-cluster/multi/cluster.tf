@@ -223,7 +223,7 @@ resource "aws_instance" "conductor" {
 
   provisioner "remote-exec" {
     inline = [
-      "bash -euxo pipefail -c 'cd /data/rama && chmod +x unpack-rama.sh && ./unpack-rama.sh'"
+      "bash -euxo pipefail -c 'timeout=180; elapsed=0; while [ ! -f /data/rama/unpack-rama.sh ]; do if [ \"$elapsed\" -ge 180 ]; then echo Timed out waiting for /data/rama/unpack-rama.sh from cloud-init >&2; exit 1; fi; sleep 3; elapsed=$((elapsed+3)); done; cd /data/rama; chmod +x unpack-rama.sh; ./unpack-rama.sh'"
     ]
   }
 
@@ -321,7 +321,7 @@ resource "aws_instance" "supervisor" {
   }
   provisioner "remote-exec" {
     inline = [
-      "bash -euxo pipefail -c 'cd /data/rama && chmod +x unpack-rama.sh && ./unpack-rama.sh'"
+      "bash -euxo pipefail -c 'timeout=180; elapsed=0; while [ ! -f /data/rama/unpack-rama.sh ]; do if [ \"$elapsed\" -ge 180 ]; then echo Timed out waiting for /data/rama/unpack-rama.sh from cloud-init >&2; exit 1; fi; sleep 3; elapsed=$((elapsed+3)); done; cd /data/rama; chmod +x unpack-rama.sh; ./unpack-rama.sh'"
     ]
   }
 
