@@ -11,6 +11,46 @@ usage () {
 DIR=$(realpath "$(dirname "$0")")
 CWD=$(pwd)
 
+# -----------------------------------------------------------------------------
+# Terraform logging
+# -----------------------------------------------------------------------------
+# To aid in debugging, we optionally enable Terraform logging and write the logs
+# to a predictable location on the bastion / jump server.  A user can override
+# the defaults by exporting TF_LOG or TF_LOG_PATH before invoking this script.
+#
+#  * TF_LOG – verbosity (TRACE, DEBUG, INFO, WARN, ERROR).  Defaults to INFO.
+#  * TF_LOG_PATH – destination file.  Defaults to a per-cluster file under
+#    "$HOME/.rama/terraform-logs/".
+#
+# These variables are only set if they have not already been provided so that we
+# never clobber a caller's preferences.
+
+DEFAULT_TF_LOG_LEVEL="INFO"
+
+# Create a default log directory and file only if TF_LOG_PATH isn't set.  We do
+# this work early so that all Terraform invocations in this script inherit the
+# environment variables.
+ensure_terraform_logging() {
+  if [[ -z "${TF_LOG_PATH:-}" ]]; then
+    local log_dir="$HOME/.rama/terraform-logs"
+    mkdir -p "$log_dir"
+
+    # Example: terraform-deploy-mycluster-20250101T120000.log
+    local timestamp="$(date +%Y%m%dT%H%M%S)"
+    TF_LOG_PATH="${log_dir}/terraform-${OP_NAME}-${CLUSTER_NAME:-unknown}-${timestamp}.log"
+    export TF_LOG_PATH
+  fi
+
+  # Respect existing TF_LOG, otherwise set a sensible default.
+  if [[ -z "${TF_LOG:-}" ]]; then
+    TF_LOG="$DEFAULT_TF_LOG_LEVEL"
+    export TF_LOG
+  fi
+}
+
+# We'll call ensure_terraform_logging once we know the cluster name (after we
+# parse positional arguments below).
+
 OP_NAME=$1
 shift # remove first arg, OP_NAME
 
@@ -26,6 +66,9 @@ fi
 
 CLUSTER_NAME=$1
 shift
+
+# Now that we have the cluster name, configure Terraform logging to include it.
+ensure_terraform_logging
 
 
 WORKSPACE_NAME=${CLUSTER_NAME}

@@ -108,7 +108,29 @@ We recommend using a Graviton2 instance for testing (e.g., `t4g.2xlarge` with 32
    ```
    **Tip:** If running Terraform within the same VPC (e.g., AWS Cloud9), set `use_private_ip = true` so provisioning uses the private IP.
    Then open `rama.tfvars` and update the required variables (region, username, vpc_security_group_ids, etc).
-3. Run `bin/rama-cluster.sh deploy --singleNode <cluster-name>`.
+  3. Run `bin/rama-cluster.sh deploy --singleNode <cluster-name>`.
+
+### Terraform debug logs on the bastion / jump server
+
+Every invocation of the helper scripts (`bin/rama-cluster.sh` and
+`bin/rama-infra.sh`) now records a detailed Terraform log to
+`$HOME/.rama/terraform-logs/`.  The log file name contains the operation
+(deploy / destroy / plan / infra-admin / infra-user), the cluster (when
+applicable) and a timestamp.  You can raise or lower the verbosity by exporting
+`TF_LOG` before running the script, or override the destination by setting
+`TF_LOG_PATH` yourself.
+
+For example:
+
+```bash
+# Only log warnings and errors and write to a custom location
+export TF_LOG=WARN
+export TF_LOG_PATH=$HOME/tmp/terraform.log
+bin/rama-cluster.sh plan my-cluster
+```
+
+If `TF_LOG` / `TF_LOG_PATH` are not provided, the scripts default to `INFO`
+level and store logs under `~/.rama/terraform-logs/`.
 
 
 ### Deploying modules
