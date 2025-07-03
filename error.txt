@@ -1,0 +1,4 @@
+│ Error: Unsupported block type
+│ 
+│   on main.tf line 18:
+│   18:   validation {

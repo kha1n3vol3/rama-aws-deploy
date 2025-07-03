@@ -13,11 +13,15 @@ variable "key_name" { type = string }     # from ~/.rama/auth.tfvars
 variable "username" { type = string }
 variable "vpc_security_group_ids" { type = list(string) }
 
-variable "rama_source_path" { type = string }
+
+variable "rama_source_path" {
+  type = string
+
   validation {
     condition     = can(regex("^https?://", var.rama_source_path))
     error_message = "rama_source_path must be an absolute URL (e.g. https://...)"
   }
+}
 variable "license_source_path" {
   type    = string
   default = ""
@@ -166,7 +170,8 @@ data "cloudinit_config" "conductor_config" {
         command     = "conductor"
       }),
       # rama.license
-      license_file_contents = (var.license_source_path != "" && fileexists(var.license_source_path)) ? file(var.license_source_path) : "",
+      # If a license file path was provided, read its contents; otherwise, leave empty
+      license_file_contents = var.license_source_path != "" ? file(var.license_source_path) : "",
       # Manage rama.zip script
       unpack_rama_contents = templatefile("../common/conductor/unpack-rama.sh", {
         username = var.username
