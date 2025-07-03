@@ -172,10 +172,7 @@ data "cloudinit_config" "conductor_config" {
       # rama.license
       # If a license file path was provided, read its contents; otherwise, leave empty
       license_file_contents = var.license_source_path != "" ? file(var.license_source_path) : "",
-      # Manage rama.zip script
-      unpack_rama_contents = templatefile("../common/conductor/unpack-rama.sh", {
-        username = var.username
-      })
+      # unpack_rama_contents removed (handled in remote-exec)
     })
   }
 
@@ -223,7 +220,7 @@ resource "aws_instance" "conductor" {
 
   provisioner "remote-exec" {
     inline = [
-      "bash -euxo pipefail -c 'timeout=180; elapsed=0; while [ ! -f /data/rama/unpack-rama.sh ]; do if [ \"$elapsed\" -ge 180 ]; then echo Timed out waiting for /data/rama/unpack-rama.sh from cloud-init >&2; exit 1; fi; sleep 3; elapsed=$((elapsed+3)); done; cd /data/rama; chmod +x unpack-rama.sh; ./unpack-rama.sh'"
+      "bash -euxo pipefail -c \"while [ ! -d /data/rama ]; do sleep 2; done; sudo mkdir -p /data/rama; sudo mv -f /home/${var.username}/rama.zip /data/rama/; cd /data/rama; sudo unzip -n rama.zip; local_dir=\$(grep 'local.dir' rama.yaml | cut -d':' -f2 | xargs); if [ -n \"$local_dir\" ]; then sudo mkdir -p \"$local_dir/conductor/jars\"; sudo cp -f rama.zip \"$local_dir/conductor/jars\"; fi\""
     ]
   }
 
@@ -321,7 +318,7 @@ resource "aws_instance" "supervisor" {
   }
   provisioner "remote-exec" {
     inline = [
-      "bash -euxo pipefail -c 'timeout=180; elapsed=0; while [ ! -f /data/rama/unpack-rama.sh ]; do if [ \"$elapsed\" -ge 180 ]; then echo Timed out waiting for /data/rama/unpack-rama.sh from cloud-init >&2; exit 1; fi; sleep 3; elapsed=$((elapsed+3)); done; cd /data/rama; chmod +x unpack-rama.sh; ./unpack-rama.sh'"
+      "bash -euxo pipefail -c \"while [ ! -d /data/rama ]; do sleep 2; done; sudo mkdir -p /data/rama; sudo mv -f /home/${var.username}/rama.zip /data/rama/; cd /data/rama; sudo unzip -n rama.zip; local_dir=\$(grep 'local.dir' rama.yaml | cut -d':' -f2 | xargs); if [ -n \"$local_dir\" ]; then sudo mkdir -p \"$local_dir/conductor/jars\"; sudo cp -f rama.zip \"$local_dir/conductor/jars\"; fi\""
     ]
   }
 
