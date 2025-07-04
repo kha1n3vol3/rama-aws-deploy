@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 # Log bootstrap actions for troubleshooting
-LOGFILE="/var/log/rama-conductor-bootstrap.log"
-mkdir -p "$(dirname "$LOGFILE")"
+LOGDIR="$HOME/rama-logs"
+mkdir -p "$LOGDIR"
+LOGFILE="$LOGDIR/conductor-bootstrap.log"
 exec > >(tee -a "$LOGFILE") 2>&1
 
 set -euxo pipefail

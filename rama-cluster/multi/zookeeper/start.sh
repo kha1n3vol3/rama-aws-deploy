@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 # Log bootstrap
-LOGFILE="/var/log/rama-zookeeper-bootstrap.log"
-mkdir -p "$(dirname "$LOGFILE")"
+LOGDIR="$HOME/rama-logs"
+mkdir -p "$LOGDIR"
+LOGFILE="$LOGDIR/zookeeper-bootstrap.log"
 exec > >(tee -a "$LOGFILE") 2>&1
 
 set -euxo pipefail

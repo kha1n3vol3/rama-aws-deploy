@@ -2,8 +2,9 @@
 #!/usr/bin/env bash
 
 # Log all output from this bootstrap script for later debugging.
-LOGFILE="/var/log/rama-bootstrap.log"
-mkdir -p "$(dirname "$LOGFILE")"
+LOGDIR="$HOME/rama-logs"
+mkdir -p "$LOGDIR"
+LOGFILE="$LOGDIR/single-bootstrap.log"
 # Redirect both stdout and stderr to the logfile *and* the console
 exec > >(tee -a "$LOGFILE") 2>&1
 
