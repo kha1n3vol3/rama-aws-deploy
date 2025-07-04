@@ -17,8 +17,9 @@ mkdir -p tmp && tar zxvf zookeeper.tar.gz -C tmp &>> setup.log
 # it's own directory first.
 # Ensure destination directory exists
 mkdir -p zookeeper
-# Move extracted contents (assuming a single top-level directory) into zookeeper
-mv tmp/* zookeeper/
+# Move extracted contents (assuming a single top-level directory) into zookeeper root
+first_dir=$(ls -1 tmp | head -n1)
+mv tmp/"$first_dir"/* zookeeper/
 rm -rf tmp # then we clean up the now empty temporary directory
 
 echo "Successfully downloaded Zookeeper" >> setup.log
