@@ -4,7 +4,14 @@
 # Simplified bootstrap script (logging removed)
 set -euxo pipefail
 
-sudo yum update -y
+# Update package metadata (supports yum/dnf/apt)
+if command -v yum >/dev/null 2>&1; then
+  sudo yum -y update
+elif command -v dnf >/dev/null 2>&1; then
+  sudo dnf -y update
+elif command -v apt-get >/dev/null 2>&1; then
+  sudo apt-get -y update
+fi
 
 echo "Starting zookeeper..."
 
