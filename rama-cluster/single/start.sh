@@ -21,16 +21,22 @@ sudo systemctl enable zookeeper.service
 
 echo "Starting ZooKeeper status check loop..."
 
-while true; do
-    # Run the ZooKeeper status command and check its exit code
+success=false
+for i in {1..60}; do
     if ./zookeeper/bin/zkServer.sh status > /dev/null 2>&1; then
         echo "ZooKeeper is running!"
+        success=true
         break
     else
-        echo "ZooKeeper is not ready yet. Retrying..."
+        echo "ZooKeeper is not ready yet. Attempt $i/60"
+        sleep 2
     fi
-    sleep 1
 done
+
+if [ "$success" = false ]; then
+  echo "ERROR: ZooKeeper failed to start after timeout" >&2
+  exit 1
+fi
 
 
 # -f and sudo because we must override the rama.yaml that comes from extracting rama.zip
