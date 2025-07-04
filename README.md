@@ -108,7 +108,22 @@ We recommend using a Graviton2 instance for testing (e.g., `t4g.2xlarge` with 32
    ```
    **Tip:** If running Terraform within the same VPC (e.g., AWS Cloud9), set `use_private_ip = true` so provisioning uses the private IP.
    Then open `rama.tfvars` and update the required variables (region, username, vpc_security_group_ids, etc).
-  3. Run `bin/rama-cluster.sh deploy --singleNode <cluster-name>`.
+3. **Alternative:** Skip Terraform and use the convenience installer `rama-one`.
+
+   ```bash
+   # Run on the target Ubuntu host (as root or with sudo)
+   curl -sSL https://raw.githubusercontent.com/<your-org>/<repo>/bin/rama-one.sh | sudo bash
+   # or, if the repo is already cloned on the server
+   sudo ./bin/rama-one.sh
+   ```
+
+   The script installs Java, ZooKeeper 3.9.3 and Rama 1.x under `/opt`,
+   sets up systemd units for `zookeeper`, `conductor` and `supervisor`, and starts the
+   single-node cluster in less than a minute.  Verify with `systemctl status zookeeper
+   conductor supervisor`.
+
+4. Run `bin/rama-cluster.sh deploy --singleNode <cluster-name>` if you still
+   want the Terraform-managed infrastructure workflow.
 
 ### Terraform debug logs on the bastion / jump server
 
