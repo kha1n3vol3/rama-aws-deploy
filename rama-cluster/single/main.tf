@@ -244,7 +244,7 @@ resource "null_resource" "rama" {
   # has had a chance to enable and start them.
   provisioner "remote-exec" {
     inline = [
-      "bash -euxo pipefail -c 'for svc in conductor supervisor; do for i in {1..10}; do if systemctl is-active --quiet ${svc}.service; then echo \"${svc} is running\"; break; fi; sleep 3; done; systemctl is-active --quiet ${svc}.service || (echo \"${svc} service failed to start\"; journalctl -u ${svc}.service --no-pager; exit 1); done'"
+      "bash -euxo pipefail -c 'for svc in conductor supervisor; do for i in {1..10}; do if systemctl is-active --quiet $${svc}.service; then echo \"$${svc} is running\"; break; fi; sleep 3; done; systemctl is-active --quiet $${svc}.service || (echo \"$${svc} service failed to start\"; journalctl -u $${svc}.service --no-pager; exit 1); done'"
     ]
   }
 }
