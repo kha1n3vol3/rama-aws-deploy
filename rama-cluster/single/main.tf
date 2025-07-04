@@ -116,7 +116,7 @@ resource "aws_instance" "rama" {
   # Download Rama zip to the home directory
   provisioner "remote-exec" {
     inline = [
-      "bash -euxo pipefail -c 'curl -sSLf ${var.rama_source_path} -o /home/${var.username}/rama.zip |& tee -a /home/${var.username}/rama-provision.log'"
+      "bash -euxo pipefail -c 'curl -sSLf ${var.rama_source_path} -o /home/${var.username}/rama.zip'"
     ]
   }
   # Move Rama zip to /data/rama and unpack (idempotent)

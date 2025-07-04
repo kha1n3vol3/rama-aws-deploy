@@ -1,14 +1,7 @@
 #!/usr/bin/env bash
 
-# Log bootstrap
-LOGDIR="$HOME/rama-logs"
-mkdir -p "$LOGDIR"
-LOGFILE="$LOGDIR/zookeeper-bootstrap.log"
-exec > >(tee -a "$LOGFILE") 2>&1
-
+# logging removed
 set -euxo pipefail
-
-echo "$(date -u) – ZooKeeper bootstrap starting"
 
 sudo yum update -y
 
@@ -30,4 +23,3 @@ done
 echo "ERROR: ZooKeeper failed to start." >&2
 exit 1
 
-echo "$(date -u) – ZooKeeper bootstrap complete."

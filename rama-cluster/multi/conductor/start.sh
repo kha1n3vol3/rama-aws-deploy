@@ -1,14 +1,7 @@
 #!/usr/bin/env bash
 
-# Log bootstrap actions for troubleshooting
-LOGDIR="$HOME/rama-logs"
-mkdir -p "$LOGDIR"
-LOGFILE="$LOGDIR/conductor-bootstrap.log"
-exec > >(tee -a "$LOGFILE") 2>&1
-
+# logging removed
 set -euxo pipefail
-
-echo "$(date -u) – Conductor bootstrap starting"
 
 mv /run/rama/rama.yaml /data/rama/rama.yaml
 
@@ -29,4 +22,3 @@ echo "ERROR: Conductor service failed to start." >&2
 journalctl -u conductor.service --no-pager
 exit 1
 
-echo "$(date -u) – Conductor bootstrap complete."
