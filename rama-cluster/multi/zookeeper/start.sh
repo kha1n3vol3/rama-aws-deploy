@@ -4,13 +4,7 @@
 set -euxo pipefail
 
 # Update package metadata
-if command -v yum >/dev/null 2>&1; then
-  sudo yum -y update
-elif command -v dnf >/dev/null 2>&1; then
-  sudo dnf -y update
-elif command -v apt-get >/dev/null 2>&1; then
-  sudo apt-get -y update
-fi
+# System package update not required for ZooKeeper tarball
 
 echo "Starting zookeeper..."
 

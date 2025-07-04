@@ -1,13 +1,7 @@
 #!/bin/bash
 
 # Update package metadata (supports both yum/dnf and apt)
-if command -v yum >/dev/null 2>&1; then
-  sudo yum -y update
-elif command -v dnf >/dev/null 2>&1; then
-  sudo dnf -y update
-elif command -v apt-get >/dev/null 2>&1; then
-  sudo apt-get -y update
-fi
+# No package manager update needed for tar.gz installation
 
 echo "Downloading zookeeper..." >> setup.log
 
