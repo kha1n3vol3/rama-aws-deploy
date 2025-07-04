@@ -27,7 +27,11 @@ variable "license_source_path" {
   type    = string
   default = ""
 }
-variable "zookeeper_url" { type = string }
+variable "zookeeper_url" {
+  type        = string
+  description = "URL from which to download Apache ZooKeeper tar.gz archive"
+  default     = "https://dlcdn.apache.org/zookeeper/current/apache-zookeeper-3.9.3.tar.gz"
+}
 
 variable "ami_id" { type = string }
 
