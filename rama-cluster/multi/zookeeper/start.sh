@@ -1,20 +1,26 @@
-##!/bin/bash
+#!/usr/bin/env bash
+
+# Log bootstrap
+LOGFILE="/var/log/rama-zookeeper-bootstrap.log"
+mkdir -p "$(dirname "$LOGFILE")"
+exec > >(tee -a "$LOGFILE") 2>&1
+
+set -euxo pipefail
+
+echo "$(date -u) – ZooKeeper bootstrap starting"
 
 sudo yum update -y
 
-echo "Starting zookeeper..." >> setup.log
+echo "Starting zookeeper..."
 
-sudo cp zookeeper.service /etc/systemd/system &>> setup.log
-sudo systemctl start zookeeper.service &>> setup.log
-sudo systemctl enable zookeeper.service &>> setup.log
-
-# If Zookeeper successfully starts, we don't need this log anymore
-rm setup.log
+sudo cp zookeeper.service /etc/systemd/system
+sudo systemctl start zookeeper.service
+sudo systemctl enable zookeeper.service
 
 # Basic health check to ensure ZooKeeper is running; exit non-zero if it is not
 for i in {1..10}; do
   if ./zookeeper/bin/zkServer.sh status > /dev/null 2>&1; then
-    echo "ZooKeeper is running!"
+echo "ZooKeeper is running!"
     exit 0
   fi
   echo "ZooKeeper not ready yet..."
@@ -22,3 +28,5 @@ for i in {1..10}; do
 done
 echo "ERROR: ZooKeeper failed to start." >&2
 exit 1
+
+echo "$(date -u) – ZooKeeper bootstrap complete."

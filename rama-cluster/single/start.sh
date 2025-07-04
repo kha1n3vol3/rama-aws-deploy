@@ -1,5 +1,15 @@
+
 #!/usr/bin/env bash
 
+# Log all output from this bootstrap script for later debugging.
+LOGFILE="/var/log/rama-bootstrap.log"
+mkdir -p "$(dirname "$LOGFILE")"
+# Redirect both stdout and stderr to the logfile *and* the console
+exec > >(tee -a "$LOGFILE") 2>&1
+
+set -euxo pipefail
+
+echo "$(date -u) – Starting single-node Rama bootstrap (start.sh)"
 
 sudo yum update -y
 
@@ -25,6 +35,8 @@ done
 
 # -f and sudo because we must override the rama.yaml that comes from extracting rama.zip
 sudo mv -f /tmp/rama.yaml /data/rama/rama.yaml
+
+echo "$(date -u) – rama.yaml applied"
 
 cd /data/rama
 
@@ -52,3 +64,5 @@ for svc in conductor supervisor; do
     exit 1
   fi
 done
+
+echo "$(date -u) – Single-node bootstrap complete."

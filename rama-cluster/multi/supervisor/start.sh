@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+# Log bootstrap
+LOGFILE="/var/log/rama-supervisor-bootstrap.log"
+mkdir -p "$(dirname "$LOGFILE")"
+exec > >(tee -a "$LOGFILE") 2>&1
+
+set -euxo pipefail
+
+echo "$(date -u) – Supervisor bootstrap starting"
+
 mv /run/rama/rama.yaml /data/rama/rama.yaml
 
 TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
@@ -24,3 +33,5 @@ done
 echo "ERROR: Supervisor service failed to start." >&2
 journalctl -u supervisor.service --no-pager
 exit 1
+
+echo "$(date -u) – Supervisor bootstrap complete."
